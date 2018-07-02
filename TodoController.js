@@ -1,141 +1,82 @@
-const mongoClient = require('mongodb').MongoClient;
-const {MONGO_URL} = require('./constant');
-const ObjectID = require('mongodb').ObjectID;
+const mongoose = require('mongoose');
 
-makeCollectionForNewUser = (response) => {
-  mongoClient.connect(MONGO_URL, (err, db) => {
+mongoose.connect('mongodb://localhost:27017/mongoose', (err) => {
+  if(err){
+    console.log('Connection Error');
+    return ;
+  }
+  console.log('Successfully Connected');
+});
+const {Todo} = require('./todoModel');
+
+addTodo = (todoObject, response) => {
+  let key = mongoose.Types.ObjectId();
+  const todo = new Todo({
+    _id: key,
+    isCompleted: todoObject.isCompleted,
+    todo: todoObject.todo
+  });
+
+  todo.save(err => {
     if(err){
-      console.log("Connection Failed");
-      console.log(err);
-      db.close();
+      console.log('Error in Adding todo');
+      response.status(500).send('Could not add todo');
       return ;
     }
-
-    const database = db.db("mydb");
-    database.createCollection("todos", (err, dbs) => {
-      if(err){
-        console.log("Error in the database creation");
-        console.log(err);
-        db.close();
-        return ;
-      }
-      response.status(200).send("Collection Created");
-      console.log("Collection Created");
-      db.close();
-    });
+    console.log('todo added successfully');
+    response.status(200).send(key);
   });
 }
 
-addTodo = (userObject, response) => {
-  mongoClient.connect(MONGO_URL, (err, db) => {
+deleteTodo = (todoObject, response) => {
+  Todo.deleteOne({
+    _id: mongoose.Types.ObjectId(todoObject._id)
+  }, (err) => {
     if(err){
-      console.log("Connection Failed");
+      console.log('Error in deleting todo');
       console.log(err);
-      response.status(500).send("Connection Failed with error: " + err);
-      db.close();
+      response.status(500).send('Error in deleting todo');
       return ;
     }
 
-    const database = db.db("mydb");
-    database.collection("todos").insert(userObject, (err, dbs) => {
-      if(err){
-        console.log("Error in Adding todo");
-        console.log(err);
-        response.status(500).send("Error in adding todo: " + err);
-        db.close();
-        return ;
-      }
-      response.status(200).send({_id: dbs["insertedIds"][0]});
-      console.log("Todo added successfully");
-      db.close();
-    });
+    console.log('todo deleted successfully');
+    response.status(200).send('todo deleted successfully');
   });
 }
 
-deleteTodo = (userObject, response) => {
-  mongoClient.connect(MONGO_URL, (err, db) => {
+changeStateOfTodo = (todoObject, response) => {
+  Todo.findByIdAndUpdate(mongoose.Types.ObjectId(todoObject._id), {
+    isCompleted: !todoObject.isCompleted
+  }, (err, todos) => {
     if(err){
-      console.log("Connection Failed");
+      console.log('Error in changing state of todo');
       console.log(err);
-      response.status(500).send("Connection Failed with error: " + err);
-      db.close();
+      response.status(500).send('Error in changing state of todo');
       return ;
     }
 
-    const database = db.db("mydb");
-    userObject._id = new ObjectID(userObject._id);
-    database.collection("todos").deleteMany(userObject, (err, dbs) => {
-      if(err){
-        console.log("Error in User's todo Deletion");
-        console.log(err);
-        response.status(500).send("Error in User's todo deletion: " + err);
-        db.close();
-        return ;
-      }
-      response.status(200).send("Todo delete successfully");
-      console.log(dbs.result.n + " user deleted");
-      db.close();
-    });
+    console.log('Todo Updated successfully');
+    console.log(todos);
+    response.status(200).send('Todo updated successfully');
   });
-};
-
-changeStateOfTodo = (userObject, response) => {
-  mongoClient.connect(MONGO_URL, (err, db) => {
-    if(err){
-      console.log("Connectin Failed");
-      console.log(err);
-      response.status(500).send("Error in adding todo: " + err);
-      db.close();
-      return ;
-    }
-
-    const database = db.db("mydb");
-    userObject._id = new ObjectID(userObject._id);
-    let newValue = { $set: {isCompleted: !userObject.isCompleted} };
-    database.collection("todos").updateOne(userObject, newValue, (err, dbs) => {
-      if(err){
-        console.log("Error in finding a object");
-        console.log(err);
-        response.status(500).send('Error in finding a object');
-        db.close();
-        return ;
-      }
-      response.status(200).send("todo updated successfully");
-      console.log("state change successfully");
-      db.close();
-    });
-  });
-};
+}
 
 listAllTodos = (response) => {
-  mongoClient.connect(MONGO_URL, (err, db) => {
+  Todo.find({}).exec((err, todos) => {
     if(err){
-      console.log("Connectin Failed");
+      console.log('Error in retrieving all todos');
       console.log(err);
-      response.status(500).send("Error in adding todo: " + err);
-      db.close();
+      response.status(500).send('Error in retrieving all todos');
       return ;
     }
 
-    const database = db.db("mydb");
-    database.collection("todos").find({}).toArray((err, dbs) => {
-      if(err){
-        console.log("error in fetching all the todos");
-        console.log(err);
-        response.status(500).send("Error in fetching all the todos: " + err);
-        db.close();
-        return ;
-      }
-      console.log(dbs);
-      response.status(200).send(dbs);
-      console.log("All todos are printed");
-      db.close();
-    });
+    console.log('All todos retrieved successfully');
+    console.log(todos);
+    response.status(200).send(todos);
   });
-};
+}
 
 module.exports = {
-  makeCollectionForNewUser,
   addTodo,
   deleteTodo,
   changeStateOfTodo,
