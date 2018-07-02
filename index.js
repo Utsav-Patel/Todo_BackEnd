@@ -8,7 +8,7 @@ const {
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const {PORT_NUMBER} = require('constant');
+const {PORT_NUMBER} = require('./constant');
 
 const app = express();
 
