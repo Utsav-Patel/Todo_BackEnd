@@ -57,7 +57,6 @@ changeStateOfTodo = (todoObject, response) => {
     }
 
     console.log('Todo Updated successfully');
-    console.log(todos);
     response.status(200).send('Todo updated successfully');
   });
 }
@@ -72,7 +71,6 @@ listAllTodos = (response) => {
     }
 
     console.log('All todos retrieved successfully');
-    console.log(todos);
     response.status(200).send(todos);
   });
 }
