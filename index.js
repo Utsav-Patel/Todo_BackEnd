@@ -8,6 +8,7 @@ const {
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const {PORT_NUMBER} = require('constant');
 
 const app = express();
 
@@ -33,5 +34,4 @@ app.get('/listAllTodos', (request, response) => listAllTodos(response));
 
 app.post('/changeStateOfTodo', (request, response) => changeStateOfTodo(request.body, response));
 
-const port = 3000;
-app.listen(port);
+app.listen(process.env.PORT || PORT_NUMBER);
