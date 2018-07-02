@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
+const {MONGOOSE_URL} = require('./constant');
+const {Todo} = require('./todoModel');
 
-mongoose.connect('mongodb://localhost:27017/mongoose', (err) => {
+mongoose.connect(MONGOOSE_URL, (err) => {
   if(err){
     console.log('Connection Error');
     return ;
   }
   console.log('Successfully Connected');
 });
-const {Todo} = require('./todoModel');
 
 addTodo = (todoObject, response) => {
   let key = mongoose.Types.ObjectId();
